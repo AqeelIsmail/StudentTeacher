@@ -57,10 +57,11 @@ public class AuthController : Controller
         }
         /* Step 2: Claim created
          Claim is a single labeled fact about the user - Key value pair
-         Here we record 2 facts: Name/email and the persons role 
+         Here we record 3 facts: IDName/email and the persons role 
          This is a bag of facts about this one login */
         var claims = new List<Claim>
         {
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
             new Claim(ClaimTypes.Name, user.Email),
             new Claim(ClaimTypes.Role, user.Role)
         };

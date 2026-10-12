@@ -1,4 +1,6 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace Authentication_API.Models
 {
     public class CourseResult
@@ -10,6 +12,8 @@ namespace Authentication_API.Models
 
         //result info
         public decimal FinalMark { get; set; }
+        [Required]
+        [MaxLength(10)]
         public string Outcome { get; set; } = null!;
         public DateTime RecordedAt { get; set; }
 

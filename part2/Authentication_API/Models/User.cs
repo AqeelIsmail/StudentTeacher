@@ -1,13 +1,21 @@
-﻿using Authentication_API.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using Authentication_API.Models;
 namespace Authentication_API
 {
     public class User
     {
+        [Key]
         public int UserId { get; set; } //PK
         //account information
-        public string Email { get; set; }
-        public string PasswordHash { get; set; }
-        public string Role { get; set; } // "Student" or "teacher"
+        [Required]
+        [MaxLength(256)]
+        public string Email { get; set; } = null!; 
+        [Required]
+        [MaxLength(500)]
+        public string PasswordHash { get; set; } = null!;
+        [Required]
+        [MaxLength(20)]
+        public string Role { get; set; } = null!;// "Student" or "teacher"
 
         //navigation properties
         //--> allow EF Core to navigate from a User object to its related profile.

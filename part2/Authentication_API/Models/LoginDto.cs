@@ -1,9 +1,15 @@
-﻿namespace Authentication_API.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Authentication_API.Models
 {
     public class LoginDto
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
-       
+        [Required]
+        [EmailAddress]
+        [MaxLength(256)]
+        public string Email { get; set; } = null!;
+
+        [Required]
+        public string Password { get; set; } = null!;
     }
 }

@@ -1,5 +1,7 @@
 ﻿
 
+using System.ComponentModel.DataAnnotations;
+
 namespace Authentication_API.Models
 {
     public class CourseCategory
@@ -7,7 +9,10 @@ namespace Authentication_API.Models
         public int CourseCategoryId { get; set; }//PK
 
         //Category information
+        [Required]
+        [MaxLength(100)]
         public string Name { get; set; } = null!;
+        [MaxLength(500)]
         public string? Description { get; set; }
 
         //Navigation property

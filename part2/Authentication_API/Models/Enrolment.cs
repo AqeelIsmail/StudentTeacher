@@ -1,8 +1,11 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace Authentication_API.Models
 {
     public class Enrolment
     {
+        [Key]
         public int EnrolmentId { get; set; }//pks
 
         //fks
@@ -11,6 +14,8 @@ namespace Authentication_API.Models
 
         //Enrolment info
         public DateTime EnrolledAt { get; set; }
+        [Required]
+        [MaxLength(20)]
         public string Status { get; set; } = "Pending";
 
         //Navigation properties

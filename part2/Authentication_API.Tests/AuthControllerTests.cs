@@ -72,8 +72,58 @@ namespace Authentication_API.Tests
             return AuthService;
         }
 
+
         [Fact]
-        public void Register_ShouldCreateUser()
+        public async Task Register_ShouldCreateUser()
+        {
+            // Arrange: Create a separate test database
+            using var context = CreateDbContext();
+
+            var controller = new AuthController(context);
+
+            // Registration now requires Student profile information
+            var dto = new RegisterDto
+            {
+                Email = "student@test.com",
+                Password = "Password123!",
+                Role = "Student",
+                FirstName = "John",
+                LastName = "Smith",
+                StudentNumber = "STU001"
+            };
+
+            // Act: Call the registration endpoint
+            var result = await controller.Register(dto);
+
+            // Assert: Registration should return HTTP 201 Created
+            var createdResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(201, createdResult.StatusCode);
+
+            // Check that the User was saved
+            var user = context.Users.FirstOrDefault();
+
+            Assert.NotNull(user);
+            Assert.Equal("student@test.com", user.Email);
+            Assert.Equal("Student", user.Role);
+
+            // Check that the password was hashed
+            Assert.NotEqual("Password123!", user.PasswordHash);
+
+            // Check that the Student profile was created
+            var studentProfile = context.StudentProfiles.FirstOrDefault();
+
+            Assert.NotNull(studentProfile);
+            Assert.Equal("STU001", studentProfile.StudentNumber);
+            Assert.Equal("John", studentProfile.FirstName);
+            Assert.Equal("Smith", studentProfile.LastName);
+
+            // Check the relationship between User and StudentProfile
+            Assert.Equal(user.UserId, studentProfile.UserId);
+        }
+
+
+        [Fact]
+        public async Task Register_Teacher_ShouldCreateTeacherProfile()
         {
             // Arrange
             using var context = CreateDbContext();
@@ -82,28 +132,84 @@ namespace Authentication_API.Tests
 
             var dto = new RegisterDto
             {
-                Email = "student@test.com",
+                Email = "teacher@test.com",
                 Password = "Password123!",
-                Role = "Student"
+                Role = "Teacher",
+                FirstName = "Sarah",
+                LastName = "Williams",
+                EmployeeNumber = "EMP001"
             };
 
             // Act
-            var result = controller.Register(dto);
+            var result = await controller.Register(dto);
 
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            // Assert: HTTP 201 Created
+            var createdResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(201, createdResult.StatusCode);
 
-            Assert.Equal("Registered", okResult.Value);
-
-            var user = context.Users.FirstOrDefault();
-
-            Assert.NotNull(user);
-            Assert.Equal("student@test.com", user.Email);
-            Assert.Equal("Student", user.Role);
-
-            // Password should NOT be stored as plain text
+            // Verify the User record
+            var user = Assert.Single(context.Users);
+            Assert.Equal("teacher@test.com", user.Email);
+            Assert.Equal("Teacher", user.Role);
             Assert.NotEqual("Password123!", user.PasswordHash);
+
+            // Verify the Teacher profile
+            var teacherProfile = Assert.Single(context.TeacherProfiles);
+            Assert.Equal("EMP001", teacherProfile.EmployeeNumber);
+            Assert.Equal("Sarah", teacherProfile.FirstName);
+            Assert.Equal("Williams", teacherProfile.LastName);
+
+            // Verify the relationship
+            Assert.Equal(user.UserId, teacherProfile.UserId);
+
+            // A Teacher must not receive a Student profile
+            Assert.Empty(context.StudentProfiles);
         }
+
+        //same email registration test
+        [Fact]
+        public async Task Register_WithDuplicateEmail_ShouldReturnConflict()
+        {
+            // Arrange: Create a temporary in-memory database
+            using var context = CreateDbContext();
+
+            // Add an existing user
+            var existingUser = new User
+            {
+                Email = "student@test.com",
+                Role = "Student",
+                PasswordHash = "ExistingHashedPassword"
+            };
+
+            context.Users.Add(existingUser);
+            await context.SaveChangesAsync();
+
+            var controller = new AuthController(context);
+
+            // Attempt to register using the same email
+            var dto = new RegisterDto
+            {
+                Email = "student@test.com",
+                Password = "Password123!",
+                Role = "Student",
+                FirstName = "John",
+                LastName = "Smith",
+                StudentNumber = "STU002"
+            };
+
+            // Act
+            var result = await controller.Register(dto);
+
+            // Assert: HTTP 409 Conflict
+            var conflictResult = Assert.IsType<ConflictObjectResult>(result);
+
+            Assert.Equal("Email is already registered.", conflictResult.Value);
+
+            // No additional user or profile should be created
+            Assert.Single(context.Users);
+            Assert.Empty(context.StudentProfiles);
+        }
+
 
         // Login test for correct password
         [Fact]
@@ -237,5 +343,176 @@ namespace Authentication_API.Tests
             // Verify that the controller attempted to sign the user out
             Assert.True(authService.SignOutCalled);
         }
+
+
+        [Fact]
+        public async Task Register_WithInvalidRole_ShouldReturnBadRequest()
+        {
+            using var context = CreateDbContext();
+            var controller = new AuthController(context);
+
+            var dto = new RegisterDto
+            {
+                Email = "admin@test.com",
+                Password = "Password123!",
+                Role = "Admin",
+                FirstName = "John",
+                LastName = "Smith"
+            };
+
+            var result = await controller.Register(dto);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+
+            Assert.Equal(400, badRequest.StatusCode);
+            Assert.Equal("Role must be Student or Teacher.", badRequest.Value);
+
+            Assert.Empty(context.Users);
+        }
+
+        [Fact]
+        public async Task Register_WithoutStudentNumber_ShouldReturnBadRequest()
+        {
+            using var context = CreateDbContext();
+            var controller = new AuthController(context);
+
+            var dto = new RegisterDto
+            {
+                Email = "student@test.com",
+                Password = "Password123!",
+                Role = "Student",
+                FirstName = "John",
+                LastName = "Smith",
+                StudentNumber = null
+            };
+
+            var result = await controller.Register(dto);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+
+            Assert.Equal(400, badRequest.StatusCode);
+            Assert.Equal("Student number is required.", badRequest.Value);
+
+            Assert.Empty(context.Users);
+            Assert.Empty(context.StudentProfiles);
+        }
+
+        [Fact]
+        public async Task Register_WithoutEmployeeNumber_ShouldReturnBadRequest()
+        {
+            using var context = CreateDbContext();
+            var controller = new AuthController(context);
+
+            var dto = new RegisterDto
+            {
+                Email = "teacher@test.com",
+                Password = "Password123!",
+                Role = "Teacher",
+                FirstName = "Sarah",
+                LastName = "Williams",
+                EmployeeNumber = null
+            };
+
+            var result = await controller.Register(dto);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+
+            Assert.Equal(400, badRequest.StatusCode);
+            Assert.Equal("Employee number is required.", badRequest.Value);
+
+            Assert.Empty(context.Users);
+            Assert.Empty(context.TeacherProfiles);
+        }
+
+        [Fact]
+        public async Task Register_WithDuplicateStudentNumber_ShouldReturnConflict()
+        {
+            using var context = CreateDbContext();
+
+            var existingUser = new User
+            {
+                Email = "existingstudent@test.com",
+                Role = "Student",
+                PasswordHash = "ExistingHash"
+            };
+
+            existingUser.StudentProfile = new StudentProfile
+            {
+                StudentNumber = "STU001",
+                FirstName = "Existing",
+                LastName = "Student"
+            };
+
+            context.Users.Add(existingUser);
+            await context.SaveChangesAsync();
+
+            var controller = new AuthController(context);
+
+            var dto = new RegisterDto
+            {
+                Email = "newstudent@test.com",
+                Password = "Password123!",
+                Role = "Student",
+                FirstName = "John",
+                LastName = "Smith",
+                StudentNumber = "STU001"
+            };
+
+            var result = await controller.Register(dto);
+
+            var conflict = Assert.IsType<ConflictObjectResult>(result);
+
+            Assert.Equal(409, conflict.StatusCode);
+            Assert.Equal("Student number already exists.", conflict.Value);
+
+            Assert.Single(context.Users);
+            Assert.Single(context.StudentProfiles);
+        }
+
+        [Fact]
+        public async Task Register_WithDuplicateEmployeeNumber_ShouldReturnConflict()
+        {
+            using var context = CreateDbContext();
+
+            var existingUser = new User
+            {
+                Email = "existingteacher@test.com",
+                Role = "Teacher",
+                PasswordHash = "ExistingHash"
+            };
+
+            existingUser.TeacherProfile = new TeacherProfile
+            {
+                EmployeeNumber = "EMP001",
+                FirstName = "Existing",
+                LastName = "Teacher"
+            };
+
+            context.Users.Add(existingUser);
+            await context.SaveChangesAsync();
+
+            var controller = new AuthController(context);
+
+            var dto = new RegisterDto
+            {
+                Email = "newteacher@test.com",
+                Password = "Password123!",
+                Role = "Teacher",
+                FirstName = "Sarah",
+                LastName = "Williams",
+                EmployeeNumber = "EMP001"
+            };
+
+            var result = await controller.Register(dto);
+
+            var conflict = Assert.IsType<ConflictObjectResult>(result);
+
+            Assert.Equal(409, conflict.StatusCode);
+            Assert.Equal("Employee number already exists.", conflict.Value);
+
+            Assert.Single(context.Users);
+            Assert.Single(context.TeacherProfiles);
+        }
+
     }
 }

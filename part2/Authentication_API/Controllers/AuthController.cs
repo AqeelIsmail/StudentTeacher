@@ -2,10 +2,10 @@
 using Authentication_API.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;//using EF core for database operations
 
 [ApiController]
 [Route("api/[controller]")]
@@ -23,16 +23,92 @@ public class AuthController : Controller
         _context = context;
     }
 
+    // REGISTER: Creates a user and their Student or Teacher profile
     [HttpPost("register")]
-    public IActionResult Register(RegisterDto dto) //uses the data object for register (email, password and role)
+    public async Task<IActionResult> Register(RegisterDto dto)
     {
-        //actual User object is created using the user input from RegisterDto
-        var newUser = new User { Email = dto.Email, Role = dto.Role };
-        newUser.PasswordHash = _hasher.HashPassword(newUser, dto.Password);//using inbuilt hashing method hash the password
+        // STEP 1: Check that the role is valid
+        if (dto.Role != "Student" && dto.Role != "Teacher")
+        {
+            return BadRequest("Role must be Student or Teacher.");
+        }
 
-        _context.Users.Add(newUser); //store the hashed password to the db
-        _context.SaveChanges();
-        return Ok("Registered");
+        // STEP 2: Check whether the email already exists
+        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+        {
+            return Conflict("Email is already registered.");
+        }
+
+        // STEP 3: Validate the Student or Teacher number
+        if (dto.Role == "Student")
+        {
+            if (string.IsNullOrWhiteSpace(dto.StudentNumber))
+            {
+                return BadRequest("Student number is required.");
+            }
+
+            if (await _context.StudentProfiles
+                .AnyAsync(s => s.StudentNumber == dto.StudentNumber))
+            {
+                return Conflict("Student number already exists.");
+            }
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(dto.EmployeeNumber))
+            {
+                return BadRequest("Employee number is required.");
+            }
+
+            if (await _context.TeacherProfiles
+                .AnyAsync(t => t.EmployeeNumber == dto.EmployeeNumber))
+            {
+                return Conflict("Employee number already exists.");
+            }
+        }
+
+        // STEP 4: Create the User object
+        var newUser = new User
+        {
+            Email = dto.Email,
+            Role = dto.Role
+        };
+
+        // Hash the password before storing it
+        newUser.PasswordHash =
+            _hasher.HashPassword(newUser, dto.Password);
+
+        // STEP 5: Create the correct linked profile
+        if (dto.Role == "Student")
+        {
+            newUser.StudentProfile = new StudentProfile
+            {
+                StudentNumber = dto.StudentNumber!,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName
+            };
+        }
+        else
+        {
+            newUser.TeacherProfile = new TeacherProfile
+            {
+                EmployeeNumber = dto.EmployeeNumber!,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName
+            };
+        }
+
+        // STEP 6: Save the User and linked profile together
+        _context.Users.Add(newUser);
+        await _context.SaveChangesAsync();
+
+        // STEP 7: Return HTTP 201 Created
+        return StatusCode(201, new
+        {
+            message = "Account and profile created successfully.",
+            userId = newUser.UserId,
+            role = newUser.Role
+        });
     }
 
     /* Step 1: 

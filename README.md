@@ -34,7 +34,7 @@ The system supports two roles: Teacher and Student. Users can register, log in, 
 1. Clone or download this repository.
 2. Open part2/Authentication\_API.slnx in Visual Studio.
 3. Ensure Authentication\_API is the startup project.
-4. Open part2/Authentication\_API/appsettings.json and update the DefaultConnection connection string for your SQL Server instance. The example uses `localhost\\SQLEXPRESS` and `StudentTeacherMigrationTest`; your server or database name may differ.
+4. Open part2/Authentication\_API/appsettings.json and update the DefaultConnection connection string for your SQL Server instance. The example uses localhost\\SQLEXPRESS and StudentTeacherMigrationTest; your server or database name may differ.
 5. Build the solution so NuGet dependencies are restored.
 6. In Visual Studio, open Tools > NuGet Package Manager > Package Manager Console. Select the Authentication\_API project as the default project and run:
 
@@ -58,20 +58,12 @@ Important: Applying migrations creates the schema, not the sample records from a
 ### API areas
 
 Auth: Register, login, logout, view and update profile 
-
 Categories: View and manage course categories
-
 Courses: List, view, create, update and delete courses; teacher's courses
-
 Enrolments: Enrol, view enrolments, change status and cancel/remove enrolments
-
 Results: Record, view and update course results 
-
-teacher/ Student: role-based authorization demonstrations 
-
+Reacher/ Student: role-based authorization demonstrations 
 DashBoard: Authentication- only 
-
-
 
 Some controllers are demonstrations and not essential RaceDay features. See controller attributes and methods for the exact routes and permitted roles.
 

@@ -57,13 +57,19 @@ Important: Applying migrations creates the schema, not the sample records from a
 
 ### API areas
 
-Auth: Register, login, logout, view and update profile 
-Categories: View and manage course categories
-Courses: List, view, create, update and delete courses; teacher's courses
-Enrolments: Enrol, view enrolments, change status and cancel/remove enrolments
+Auth: Register, login, logout, view and update profile  
+
+Categories: View and manage course categories 
+
+Courses: List, view, create, update and delete courses; teacher's courses 
+
+Enrolments: Enrol, view enrolments, change status and cancel/remove enrolments 
+
 Results: Record, view and update course results 
+
 Reacher/ Student: role-based authorization demonstrations 
-DashBoard: Authentication- only 
+
+DashBoard: Authentication-only 
 
 Some controllers are demonstrations and not essential RaceDay features. See controller attributes and methods for the exact routes and permitted roles.
 

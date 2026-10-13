@@ -1,5 +1,6 @@
 using Authentication_API.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Authentication_API
@@ -24,6 +25,7 @@ namespace Authentication_API
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

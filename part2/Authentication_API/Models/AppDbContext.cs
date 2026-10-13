@@ -12,7 +12,8 @@ namespace Authentication_API
         //for example, the configuration can specify SQL Server and the connection string.
 
         //entities
-        public DbSet<User> Users { get; set; } //A DbSet<User> represents a collection of User entities that EF Core can query, insert, update and delete.
+        public DbSet<User> Users { get; set; } //A DbSet<User> represents a collection of User entities that
+                                               //EF Core can query, insert, update and delete.
         public DbSet<StudentProfile> StudentProfiles { get; set; }
         public DbSet<TeacherProfile> TeacherProfiles { get; set; }
         public DbSet<CourseCategory> CourseCategories { get; set; }
@@ -20,9 +21,10 @@ namespace Authentication_API
         public DbSet<Enrolment> Enrolments { get; set; }
         public DbSet<CourseResult> CourseResults { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder) 
+            //This method is called by EF Core when it builds the database model.
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);//This allows any configuration from the parent DbContext class to run.
 
             //Users
             modelBuilder.Entity<User>(entity =>
@@ -75,19 +77,21 @@ namespace Authentication_API
             });
 
             //Courses
-            modelBuilder.Entity<Course>(entity =>
+            modelBuilder.Entity<Course>(entity => //This tells EF Core that we're configuring the Course entity
             {
                 entity.ToTable("Courses");
                 entity.HasKey(c => c.CourseId);
 
-                entity.HasIndex(c => c.Code).IsUnique();
+                entity.HasIndex(c => c.Code).IsUnique(); //creates an index on the code column and enforces uniqueness,
+                                                         //ensuring that no two courses can have the same code.
 
                 entity.Property(c => c.CreatedAt)
                     .HasDefaultValueSql("GETDATE()");
 
-                entity.HasOne(c => c.TeacherProfile)
-                    .WithMany()
-                    .HasForeignKey(c => c.TeacherProfileId)
+                entity.HasOne(c => c.TeacherProfile)//hasOne()-->A Course has one Teacher
+                    .WithMany()//--> Teacher can have many Courses
+                    .HasForeignKey(c => c.TeacherProfileId) //TeacherProfileId in Course is a foreign key 
+                                                               //connects the two tables
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(c => c.CourseCategory)

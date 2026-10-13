@@ -31,5 +31,6 @@ namespace Authentication_API.Models
         public TeacherProfile TeacherProfile { get; set; } = null!;
         public CourseCategory CourseCategory { get; set; } = null!;
         public ICollection<Enrolment> Enrolments { get; set; } = new List<Enrolment>();
+        //course can have many enrolments, one-to-many relationship between courses and enrolments.
     }
 }

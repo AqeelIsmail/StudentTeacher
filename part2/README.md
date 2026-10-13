@@ -17,7 +17,7 @@ The system supports two roles: Teacher and Student. Users can register, log in, 
 * Cookie authentication and ASP.NET Core Identity password hashing
 * Swagger/OpenAPI for manual endpoint testing
 * xUnit unit tests
-* GitHub Actions (repository currently includes a documentation check workflow; add a separate build-and-test workflow if required)
+* GitHub Actions
 
 
 
@@ -43,7 +43,7 @@ Update-Database (hit enter)
 
 This applies the existing EF Core migration to the database named in the connection string. Do not create another initial migration when the repository already includes one. Do not execute the Part 1 CREATE TABLE script against the same database before applying migrations.
 
-7. Open SSMS and verify the database contains Users, Student\_Profiles, Teacher\_Profiles, Course\_Categories, Courses, Enrolments, Course\_Results and \_\_EFMigrationsHistory.
+7. Open SSMS and verify the database contains Users, Student\_Profiles, Teacher\_Profiles, Course\_Categories, Courses, Enrolments, Course\_Results and \_\_\_FMigrationsHistory.
 8. Run the API using Visual Studio. In the development environment, open the Swagger page (add /swagger to the url). Use the actual localhost URL displayed by Visual Studio.
 9. Register a new Teacher or Student account through POST /api/auth/register, then log in using POST /api/auth/login. Keep the login cookie for subsequent authorized requests in the same Swagger/browser session.
 10. Try course/category/enrolment/results endpoints according to the user's role.

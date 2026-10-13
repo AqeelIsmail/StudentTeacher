@@ -28,8 +28,8 @@ namespace Authentication_API.Models
         public DateTime CreatedAt { get; set; }
 
         //Navigation properties
-        public TeacherProfile TeacherProfile { get; set; } = null!;
-        public CourseCategory CourseCategory { get; set; } = null!;
+        public TeacherProfile TeacherProfile { get; set; } = null!; //belongs to one teacher profile.
+        public CourseCategory CourseCategory { get; set; } = null!;//belongs to one course category.
         public ICollection<Enrolment> Enrolments { get; set; } = new List<Enrolment>();
         //course can have many enrolments, one-to-many relationship between courses and enrolments.
     }

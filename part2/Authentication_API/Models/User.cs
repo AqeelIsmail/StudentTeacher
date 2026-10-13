@@ -19,7 +19,8 @@ namespace Authentication_API
 
         //navigation properties
         //--> allow EF Core to navigate from a User object to its related profile.
-        //The ? indicates that the relationship may be absent. These are not additional columns in the Users table.
+        //The ? indicates that the relationship may be absent.
+        //These are not additional columns in the Users table.
         public StudentProfile? StudentProfile { get; set; }
         public TeacherProfile? TeacherProfile { get; set; }
     }

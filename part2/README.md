@@ -26,7 +26,7 @@ The system supports two roles: Teacher and Student. Users can register, log in, 
 1. Visual Studio with ASP.NET and web development workload, or a compatible editor and .NET 10 SDK.
 2. SQL Server Express (or another accessible SQL Server instance).
 3. SQL Server Management Studio (SSMS), for inspecting the database.
-4. 
+
 
 ### Set up the project
 

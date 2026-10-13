@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;//using EF core for database operations
 
@@ -159,4 +161,123 @@ public class AuthController : Controller
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return Ok("Logged out");
     }
+
+    // GET /api/auth/profile - signed-in Student or Teacher views their own profile.
+    [HttpGet("profile")]
+    [Authorize]
+    public async Task<IActionResult> GetProfile()
+    {
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId))
+            return Unauthorized();
+
+        var user = await _context.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.UserId == userId);
+        if (user == null) return Unauthorized();
+
+        if (user.Role == "Student")
+        {
+            var profile = await _context.StudentProfiles.AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .Select(s => new {
+                    s.StudentProfileId,
+                    s.StudentNumber,
+                    s.FirstName,
+                    s.LastName,
+                    s.ProfileImageUrl
+                })
+                .FirstOrDefaultAsync();
+            if (profile == null) return NotFound("Student profile not found.");
+            return Ok(new { user.UserId, user.Email, user.Role, Profile = profile });
+        }
+
+        if (user.Role == "Teacher")
+        {
+            var profile = await _context.TeacherProfiles.AsNoTracking()
+                .Where(t => t.UserId == userId)
+                .Select(t => new {
+                    t.TeacherProfileId,
+                    t.EmployeeNumber,
+                    t.FirstName,
+                    t.LastName,
+                    t.ProfileImageUrl
+                })
+                .FirstOrDefaultAsync();
+            if (profile == null) return NotFound("Teacher profile not found.");
+            return Ok(new { user.UserId, user.Email, user.Role, Profile = profile });
+        }
+        return Forbid();
+    }
+
+    // PUT /api/auth/profile - update only first and last name on own profile.
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId))
+            return Unauthorized();
+
+        var user = await _context.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.UserId == userId);
+        if (user == null) return Unauthorized();
+
+        if (user.Role == "Student")
+        {
+            var profile = await _context.StudentProfiles
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+            if (profile == null) return NotFound("Student profile not found.");
+            profile.FirstName = dto.FirstName;
+            profile.LastName = dto.LastName;
+            await _context.SaveChangesAsync();
+            return Ok(new
+            {
+                user.UserId,
+                user.Email,
+                user.Role,
+                Profile = new
+                {
+                    profile.StudentProfileId,
+                    profile.StudentNumber,
+                    profile.FirstName,
+                    profile.LastName,
+                    profile.ProfileImageUrl
+                }
+            });
+        }
+
+        if (user.Role == "Teacher")
+        {
+            var profile = await _context.TeacherProfiles
+                .FirstOrDefaultAsync(t => t.UserId == userId);
+            if (profile == null) return NotFound("Teacher profile not found.");
+            profile.FirstName = dto.FirstName;
+            profile.LastName = dto.LastName;
+            await _context.SaveChangesAsync();
+            return Ok(new
+            {
+                user.UserId,
+                user.Email,
+                user.Role,
+                Profile = new
+                {
+                    profile.TeacherProfileId,
+                    profile.EmployeeNumber,
+                    profile.FirstName,
+                    profile.LastName,
+                    profile.ProfileImageUrl
+                }
+            });
+        }
+        return Forbid();
+    }
+}
+// Request body for PUT /api/auth/profile. Matches the approved endpoint plan.
+public class UpdateProfileDto
+{
+    [Required]
+    [MaxLength(100)]
+    public string FirstName { get; set; } = null!;
+
+    [Required]
+    [MaxLength(100)]
+    public string LastName { get; set; } = null!;
 }

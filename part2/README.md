@@ -33,7 +33,7 @@ The system supports two roles: Teacher and Student. Users can register, log in, 
 1. Clone or download this repository.
 2. Open part2/Authentication\_API.slnx in Visual Studio.
 3. Ensure Authentication\_API is the startup project.
-4. Open part2/Authentication\_API/appsettings.json and update the DefaultConnection connection string for your SQL Server instance. The example uses localhost\\SQLEXPRESS and `StudentTeacherMigrationTest`; your server or database name may differ.
+4. Open part2/Authentication\_API/appsettings.json and update the DefaultConnection connection string for your SQL Server instance. The example uses localhost\\SQLEXPRESS and StudentTeacherMigrationTest; your server or database name may differ.
 5. Build the solution so NuGet dependencies are restored.
 6. In Visual Studio, open Tools > NuGet Package Manager > Package Manager Console. Select the Authentication\_API project as the default project and run:
 
@@ -41,7 +41,7 @@ In powershell type
 Update-Database (hit enter)
 
 
-This applies the existing EF Core migration to the database named in the connection string. Do not create another initial migration when the repository already includes one. Do not execute the Part 1 `CREATE TABLE` script against the same database before applying migrations.
+This applies the existing EF Core migration to the database named in the connection string. Do not create another initial migration when the repository already includes one. Do not execute the Part 1 CREATE TABLE script against the same database before applying migrations.
 
 7. Open SSMS and verify the database contains Users, Student\_Profiles, Teacher\_Profiles, Course\_Categories, Courses, Enrolments, Course\_Results and \_\_EFMigrationsHistory.
 8. Run the API using Visual Studio. In the development environment, open the Swagger page (add /swagger to the url). Use the actual localhost URL displayed by Visual Studio.

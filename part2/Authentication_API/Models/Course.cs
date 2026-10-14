@@ -7,7 +7,6 @@ namespace Authentication_API.Models
     {
         [Key]
         public int CourseId { get; set; }//PK
-
         //FKs
         [Required]
         public int TeacherProfileId { get; set; }

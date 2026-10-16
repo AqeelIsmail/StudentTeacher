@@ -5,6 +5,7 @@ namespace Authentication_API.Models
 {
     public class RegisterDto
     {
+        //This class defines the information the registration process expects.
         [Required]
         [EmailAddress]
         [MaxLength(256)]

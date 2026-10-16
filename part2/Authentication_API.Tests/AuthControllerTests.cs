@@ -73,16 +73,18 @@ namespace Authentication_API.Tests
         }
 
 
-        [Fact]
-        public async Task Register_ShouldCreateUser()
+        [Fact] //tells Xunit that this method is a test case
+        public async Task Register_ShouldCreateUser() //allows the task to run asynchronously
+                                                      //and return a Task, which is required for async test methods
         {
-            // Arrange: Create a separate test database
-            using var context = CreateDbContext();
-
-            var controller = new AuthController(context);
+            // Arrange: Create a separate test database (in-memory)
+            using var context = CreateDbContext(); 
+             
+            var controller = new AuthController(context); //creates an instance of the AuthController,
+                                                          //passing in the test database context
 
             // Registration now requires Student profile information
-            var dto = new RegisterDto
+            var dto = new RegisterDto //creates a new instance of RegisterDto and populates it with test data
             {
                 Email = "student@test.com",
                 Password = "Password123!",
@@ -93,11 +95,15 @@ namespace Authentication_API.Tests
             };
 
             // Act: Call the registration endpoint
-            var result = await controller.Register(dto);
+            var result = await controller.Register(dto); //calls the register method of the AuthController,
+                                                         //passing in the RegisterDto object
+                                                         //awaits the result of the registration method
 
             // Assert: Registration should return HTTP 201 Created
-            var createdResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(201, createdResult.StatusCode);
+            var createdResult = Assert.IsType<ObjectResult>(result);//checks the type of the result
+                                                                    //returned by the Register method
+            Assert.Equal(201, createdResult.StatusCode);//compares expected, with actual
+                                                        //checks that the status code of the result is 201 (Created)
 
             // Check that the User was saved
             var user = context.Users.FirstOrDefault();
@@ -118,7 +124,7 @@ namespace Authentication_API.Tests
             Assert.Equal("Smith", studentProfile.LastName);
 
             // Check the relationship between User and StudentProfile
-            Assert.Equal(user.UserId, studentProfile.UserId);
+            Assert.Equal(user.UserId, studentProfile.UserId);//expect, actual
         }
 
 

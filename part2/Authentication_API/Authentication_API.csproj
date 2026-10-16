@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	 <GenerateDocumentationFile>true</GenerateDocumentationFile> <!-- This line enables the generation of XML documentation files for the project. -->
   </PropertyGroup>
 
   <ItemGroup>

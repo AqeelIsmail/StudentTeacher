@@ -22,7 +22,17 @@ namespace Authentication_API
             builder.Services.AddAuthorization();
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options => //Configure Swagger to read the XML documentation
+            {
+                var xmlFile = $"{typeof(Program).Assembly.GetName().Name}.xml";
+
+                var xmlPath = Path.Combine(
+                    AppContext.BaseDirectory,
+                    xmlFile
+                );
+                options.IncludeXmlComments(xmlPath);
+            });
+
 
             var app = builder.Build();
 

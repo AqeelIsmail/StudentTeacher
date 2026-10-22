@@ -1,0 +1,463 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Authentication_API</name>
+    </assembly>
+    <members>
+        <member name="M:AuthController.Register(Authentication_API.Models.RegisterDto)">
+            <summary>
+            Registers a Student or Teacher account and creates the linked profile.
+            </summary>
+            <remarks>
+            Public registration. Passwords are hashed; duplicate email or role-specific numbers are rejected.
+            </remarks>
+            <param name="dto">Registration details, including the role and corresponding student or employee number.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="201">Account and profile created.</response>
+            <response code="400">Invalid registration fields, role or missing role-specific identifier.</response>
+            <response code="409">Email or role-specific identifier already exists.</response>
+        </member>
+        <member name="M:AuthController.Login(Authentication_API.Models.LoginDto)">
+            <summary>
+            Authenticates an existing Student or Teacher using a password.
+            </summary>
+            <remarks>
+            On success, the API issues its cookie-authentication ticket through SignInAsync.
+            </remarks>
+            <param name="dto">Email address and password.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Credentials accepted and sign-in requested.</response>
+            <response code="400">Invalid request body or missing fields.</response>
+            <response code="401">Email or password is incorrect.</response>
+        </member>
+        <member name="M:AuthController.Logout">
+            <summary>
+            Logs out the current user by clearing the API authentication cookie.
+            </summary>
+            <remarks>
+            Signs the user out of cookie authentication.
+            The response instructs the client to remove its authentication cookie.
+            </remarks>
+            <returns>
+            HTTP 200 OK when the sign-out operation is completed.
+            </returns>
+            <response code="200">
+            The user has been signed out successfully.
+            </response>
+        </member>
+        <member name="M:AuthController.GetProfile">
+            <summary>
+            Retrieves the signed-in user and their Student or Teacher profile.
+            </summary>
+            <remarks>
+            Requires API cookie authentication and uses the authenticated user identifier.
+            </remarks>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">User and matching profile returned.</response>
+            <response code="401">Authentication or user record missing.</response>
+            <response code="403">User role is unsupported.</response>
+            <response code="404">Matching Student or Teacher profile not found.</response>
+        </member>
+        <member name="M:AuthController.UpdateProfile(Authentication_API.DTOs.UpdateProfileDto)">
+            <summary>
+            Updates the signed-in Student or Teacher profile name.
+            </summary>
+            <remarks>
+            Only the authenticated user's own first and last names are updated.
+            </remarks>
+            <param name="dto">New first and last names.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Updated profile returned.</response>
+            <response code="400">Invalid profile data.</response>
+            <response code="401">Authentication or user record missing.</response>
+            <response code="403">User role is unsupported.</response>
+            <response code="404">Matching Student or Teacher profile not found.</response>
+        </member>
+        <member name="M:AuthController.UploadProfileImage(Microsoft.AspNetCore.Http.IFormFile,Authentication_API.Services.BlobStorageService,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Uploads or replaces the logged-in Student or Teacher profile picture.
+            </summary>
+            <remarks>
+            The image is stored in Blob Storage and its URL is saved in SQL Server.
+            </remarks>
+            <param name="image">A JPG or PNG image, up to 5 MB.</param>
+            <returns>The URL of the uploaded profile picture.</returns>
+            <response code="200">Image uploaded successfully.</response>
+            <response code="400">Invalid image file.</response>
+            <response code="401">Authentication required.</response>
+            <response code="404">Profile not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CategoriesController.GetCategories">
+            <summary>
+            Lists available course categories.
+            </summary>
+            <remarks>
+            Public endpoint for displaying categories in the MVC interface.
+            </remarks>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Category list returned.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CategoriesController.CreateCategory(Authentication_API.DTOs.CourseCategoryDto)">
+            <summary>
+            Creates a course category.
+            </summary>
+            <remarks>
+            Teacher role required; duplicate category names are rejected.
+            </remarks>
+            <param name="dto">Category name and optional description.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="201">Category created.</response>
+            <response code="400">Invalid category data.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Teacher role required.</response>
+            <response code="409">Category name already exists.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CategoriesController.UpdateCategory(System.Int32,Authentication_API.DTOs.CourseCategoryDto)">
+            <summary>
+            Updates an existing course category.
+            </summary>
+            <remarks>
+            Teacher role required; category names must remain unique.
+            </remarks>
+            <param name="id">Category identifier.</param>
+            <param name="dto">Updated category name and description.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Updated category returned.</response>
+            <response code="400">Invalid category data.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Teacher role required.</response>
+            <response code="404">Category not found.</response>
+            <response code="409">Another category already has this name.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CategoriesController.DeleteCategory(System.Int32)">
+            <summary>
+            Deletes an unused course category.
+            </summary>
+            <remarks>
+            Teacher role required; categories linked to courses cannot be deleted.
+            </remarks>
+            <param name="id">Category identifier.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="204">Category deleted.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Teacher role required.</response>
+            <response code="404">Category not found.</response>
+            <response code="409">Category has linked courses.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CoursesController.GetCourses">
+            <summary>
+            Retrieves all available courses.
+            </summary>
+            <remarks>
+            Public endpoint. Visitors, Students and Teachers can
+            browse available courses without requiring authentication.
+            </remarks>
+            <returns>
+            A list of available courses.
+            </returns>
+            <response code="200">
+            Courses retrieved successfully.
+            </response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CoursesController.GetMyCourses">
+            <summary>
+            Lists courses created by the signed-in Teacher.
+            </summary>
+            <remarks>
+            Teacher role required; courses are filtered by the current Teacher profile.
+            </remarks>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Teacher course list returned.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Teacher role required.</response>
+            <response code="404">Teacher profile not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CoursesController.GetCourse(System.Int32)">
+            <summary>
+            Retrieves a specific course by its ID.
+            </summary>
+            <param name="id">
+            The unique ID of the course to retrieve.
+            </param>
+            <returns>
+            The requested course and its details, if found.
+            </returns>
+            <response code="200">
+            The course was retrieved successfully.
+            </response>
+            <response code="404">
+            No course was found with the specified ID.
+            </response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CoursesController.CreateCourse(Authentication_API.DTOs.CourseDto)">
+            <summary>
+            Creates a course for the signed-in Teacher.
+            </summary>
+            <remarks>
+            Teacher role required. The supplied category must exist and the course code must be unique.
+            </remarks>
+            <param name="dto">Course code, title, description and category identifier.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="201">Course created.</response>
+            <response code="400">Invalid course data or category.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Teacher role required.</response>
+            <response code="404">Teacher profile not found.</response>
+            <response code="409">Course code already exists.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CoursesController.UpdateCourse(System.Int32,Authentication_API.DTOs.CourseDto)">
+            <summary>
+            Updates a course owned by the signed-in Teacher.
+            </summary>
+            <remarks>
+            Rejects changes by a different Teacher, missing categories, and duplicate course codes.
+            </remarks>
+            <param name="id">Course identifier.</param>
+            <param name="dto">Updated course fields.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Updated course returned.</response>
+            <response code="400">Invalid course data or category.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Not the owning Teacher or wrong role.</response>
+            <response code="404">Course not found.</response>
+            <response code="409">Course code already exists.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CoursesController.DeleteCourse(System.Int32)">
+            <summary>
+            Deletes a course owned by the signed-in Teacher.
+            </summary>
+            <remarks>
+            Deletion is blocked when the course already has enrolments.
+            </remarks>
+            <param name="id">Course identifier.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="204">Course deleted.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Not the owning Teacher or wrong role.</response>
+            <response code="404">Course not found.</response>
+            <response code="409">Course has enrolments.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CoursesController.UploadCourseImage(System.Int32,Microsoft.AspNetCore.Http.IFormFile)">
+            <summary>
+            Uploads or replaces a course image.
+            </summary>
+            <remarks>
+            Only the Teacher who owns the course can upload its image.
+            The file is stored in Azure Blob Storage.
+            The image URL is saved in SQL Server.
+            </remarks>
+            <param name="id">The ID of the course.</param>
+            <param name="image">The JPG or PNG image to upload.</param>
+            <returns>The URL of the uploaded image.</returns>
+            <response code="200">Image uploaded successfully.</response>
+            <response code="400">Invalid image file.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Teacher does not own the course.</response>
+            <response code="404">Course not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.CoursesController.DeleteCourseImage(System.Int32)">
+            <summary>
+            Removes an image from a course owned by the signed-in Teacher.
+            </summary>
+            <param name="id">The course ID.</param>
+            <response code="204">Course image removed.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Teacher does not own the course.</response>
+            <response code="404">Course not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.DashBoardController.LoggedInOnly">
+            <summary>
+            Checks whether an API caller is authenticated.
+            </summary>
+            <remarks>
+            Diagnostic endpoint available to either authenticated role.
+            </remarks>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Authenticated.</response>
+            <response code="401">Authentication required.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.EnrolmentsController.Enrol(System.Int32)">
+            <summary>
+            Enrols the signed-in Student in a course.
+            </summary>
+            <remarks>
+            Creates a Pending enrolment. Duplicate enrolments are rejected.
+            </remarks>
+            <param name="id">Course identifier.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="201">Enrolment created.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Student role required.</response>
+            <response code="404">Student profile or course not found.</response>
+            <response code="409">Student already enrolled in this course.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.EnrolmentsController.GetMyEnrolments">
+            <summary>
+            Lists enrolments belonging to the signed-in Student.
+            </summary>
+            <remarks>
+            Student role required.
+            </remarks>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Student enrolments returned.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Student role required.</response>
+            <response code="404">Student profile not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.EnrolmentsController.GetEnrolment(System.Int32)">
+            <summary>
+            Retrieves an enrolment owned by the signed-in Student.
+            </summary>
+            <remarks>
+            Students may not read another Student's enrolment.
+            </remarks>
+            <param name="id">Enrolment identifier.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Enrolment returned.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Not the owning Student or wrong role.</response>
+            <response code="404">Enrolment not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.EnrolmentsController.GetCourseEnrolments(System.Int32)">
+            <summary>
+            Lists students enrolled in a course owned by the signed-in Teacher.
+            </summary>
+            <remarks>
+            Teacher role required and course ownership is checked.
+            </remarks>
+            <param name="id">Course identifier.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Course enrolments returned.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Not the owning Teacher or wrong role.</response>
+            <response code="404">Course not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.EnrolmentsController.UpdateStatus(System.Int32,Authentication_API.DTOs.EnrolmentStatusDto)">
+            <summary>
+            Changes an enrolment status for a course owned by the signed-in Teacher.
+            </summary>
+            <remarks>
+            Accepted statuses are Pending, Confirmed and Cancelled. Cannot cancel after results are recorded.
+            </remarks>
+            <param name="id">Enrolment identifier.</param>
+            <param name="dto">Requested enrolment status.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Status updated.</response>
+            <response code="400">Invalid status or cancellation blocked after results.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Not the owning Teacher or wrong role.</response>
+            <response code="404">Enrolment not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.EnrolmentsController.Withdraw(System.Int32)">
+            <summary>
+            Withdraws the signed-in Student from their own course enrolment.
+            </summary>
+            <remarks>
+            An enrolment with a recorded result cannot be withdrawn.
+            </remarks>
+            <param name="id">Enrolment identifier.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="204">Enrolment removed.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Not the owning Student or wrong role.</response>
+            <response code="404">Enrolment not found.</response>
+            <response code="409">Result already recorded.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.ResultsController.RecordResult(System.Int32,Authentication_API.DTOs.CourseResultDto)">
+            <summary>
+            Records a mark and outcome for an enrolment.
+            </summary>
+            <remarks>
+            Teacher must own the course; enrolment must be Confirmed and have no existing result. Outcome is calculated from the mark.
+            </remarks>
+            <param name="id">Enrolment identifier.</param>
+            <param name="dto">Final mark between 0 and 100.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="201">Result recorded.</response>
+            <response code="400">Invalid mark or enrolment not confirmed.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Not the owning Teacher or wrong role.</response>
+            <response code="404">Enrolment not found.</response>
+            <response code="409">Result already exists.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.ResultsController.GetMyResults">
+            <summary>
+            Lists course results for the signed-in Student.
+            </summary>
+            <remarks>
+            Only results linked to the current Student profile are returned.
+            </remarks>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Student results returned.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Student role required.</response>
+            <response code="404">Student profile not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.ResultsController.GetCourseResults(System.Int32)">
+            <summary>
+            Lists results for a course owned by the signed-in Teacher.
+            </summary>
+            <remarks>
+            Teacher role required and course ownership is checked.
+            </remarks>
+            <param name="id">Course identifier.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Course results returned.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Not the owning Teacher or wrong role.</response>
+            <response code="404">Course not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.ResultsController.UpdateResult(System.Int32,Authentication_API.DTOs.CourseResultDto)">
+            <summary>
+            Corrects a recorded result belonging to the signed-in Teacher's course.
+            </summary>
+            <remarks>
+            Recalculates Pass or Fail based on the updated mark.
+            </remarks>
+            <param name="id">Result identifier.</param>
+            <param name="dto">Corrected final mark between 0 and 100.</param>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Corrected result returned.</response>
+            <response code="400">Invalid mark.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Not the owning Teacher or wrong role.</response>
+            <response code="404">Result not found.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.StudentController.StudentOnly">
+            <summary>
+            Checks access to a Student-only API endpoint.
+            </summary>
+            <remarks>
+            Diagnostic endpoint restricted to Student role.
+            </remarks>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Student role authorized.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Student role required.</response>
+        </member>
+        <member name="M:Authentication_API.Controllers.TeacherController.TeacherOnly">
+            <summary>
+            Checks access to a Teacher-only API endpoint.
+            </summary>
+            <remarks>
+            Diagnostic endpoint restricted to Teacher role.
+            </remarks>
+            <returns>An HTTP response indicating the outcome of the operation.</returns>
+            <response code="200">Teacher role authorized.</response>
+            <response code="401">Authentication required.</response>
+            <response code="403">Teacher role required.</response>
+        </member>
+        <member name="T:Authentication_API.Migrations.InitialStudentTeacherSchema">
+            <inheritdoc />
+        </member>
+        <member name="M:Authentication_API.Migrations.InitialStudentTeacherSchema.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Authentication_API.Migrations.InitialStudentTeacherSchema.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Authentication_API.Migrations.InitialStudentTeacherSchema.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>
